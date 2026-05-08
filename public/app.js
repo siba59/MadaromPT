@@ -68,7 +68,7 @@ function mostraApp() {
 
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
-  const testo = domandaInput.value.trim();
+  const testo = domandaInput.value.trim() || domandaCorrente;
   if (!testo || occupato) return;
   const id = agenteSelect.value;
   const sp = SPECIALISTI[id];
@@ -86,11 +86,6 @@ async function eseguiAgente(sp, testo) {
     rimuoviBenvenuto();
     aggiungiBollaUtente(testo);
   }
-
-  // Rimette sempre la domanda nel campo dopo l'invio
-  domandaInput.value = domandaCorrente;
-  domandaInput.style.height = "auto";
-  domandaInput.style.height = Math.min(domandaInput.scrollHeight, 140) + "px";
 
   inviaBtn.disabled = true;
   btnSintesi.disabled = true;
