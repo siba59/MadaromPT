@@ -1,17 +1,17 @@
 const SPECIALISTI = [
-  { id: "maestro_allenatore", nome: "Maestro Allenatore PT",      emoji: "⚽", modello: "claude", gruppo: "pensatori" },
-  { id: "filosofo",           nome: "Filosofo",                   emoji: "🌍", modello: "claude", gruppo: "pensatori" },
-  { id: "pedagogista",        nome: "Pedagogista",                emoji: "📚", modello: "claude", gruppo: "pensatori" },
-  { id: "tuttologo",          nome: "Tuttologo Consapevole",      emoji: "🧭", modello: "claude", gruppo: "pensatori" },
-  { id: "neuroscienziato",    nome: "Neuroscienziato",            emoji: "🧠", modello: "claude", gruppo: "pensatori" },
-  { id: "tattico",            nome: "Esperto Tattico",            emoji: "♟️", modello: "llama",  gruppo: "specialisti" },
-  { id: "tecnico",            nome: "Esperto Tecnico",            emoji: "🎯", modello: "llama",  gruppo: "specialisti" },
-  { id: "fisiologo",          nome: "Fisiologo",                  emoji: "🏃", modello: "llama",  gruppo: "specialisti" },
-  { id: "psicologo",          nome: "Psicologo dello sport",      emoji: "🧘", modello: "llama",  gruppo: "specialisti" },
-  { id: "matematico",         nome: "Matematico complessità",     emoji: "📐", modello: "llama",  gruppo: "specialisti" },
-  { id: "economista",         nome: "Economista calcio africano", emoji: "💼", modello: "llama",  gruppo: "specialisti" },
-  { id: "traduttore",         nome: "Traduttore-Localizzatore",   emoji: "🌐", modello: "llama",  gruppo: "specialisti" },
-  { id: "web_editor",         nome: "Web Editor",                 emoji: "✍️", modello: "llama",  gruppo: "specialisti" }
+  { id: "maestro_allenatore", nome: "Maestro Allenatore PT",      emoji: "⚽", modello: "llama", gruppo: "pensatori" },
+  { id: "filosofo",           nome: "Filosofo",                   emoji: "🌍", modello: "llama", gruppo: "pensatori" },
+  { id: "pedagogista",        nome: "Pedagogista",                emoji: "📚", modello: "llama", gruppo: "pensatori" },
+  { id: "tuttologo",          nome: "Tuttologo Consapevole",      emoji: "🧭", modello: "llama", gruppo: "pensatori" },
+  { id: "neuroscienziato",    nome: "Neuroscienziato",            emoji: "🧠", modello: "llama", gruppo: "pensatori" },
+  { id: "tattico",            nome: "Esperto Tattico",            emoji: "♟️", modello: "llama", gruppo: "specialisti" },
+  { id: "tecnico",            nome: "Esperto Tecnico",            emoji: "🎯", modello: "llama", gruppo: "specialisti" },
+  { id: "fisiologo",          nome: "Fisiologo",                  emoji: "🏃", modello: "llama", gruppo: "specialisti" },
+  { id: "psicologo",          nome: "Psicologo dello sport",      emoji: "🧘", modello: "llama", gruppo: "specialisti" },
+  { id: "matematico",         nome: "Matematico complessita",     emoji: "📐", modello: "llama", gruppo: "specialisti" },
+  { id: "economista",         nome: "Economista calcio africano", emoji: "💼", modello: "llama", gruppo: "specialisti" },
+  { id: "traduttore",         nome: "Traduttore-Localizzatore",   emoji: "🌐", modello: "llama", gruppo: "specialisti" },
+  { id: "web_editor",         nome: "Web Editor",                 emoji: "✍️", modello: "llama", gruppo: "specialisti" }
 ];
 
 let conversazione   = [];
@@ -33,7 +33,6 @@ const listaSpecialisti = document.getElementById("lista-specialisti");
 const btnSintesi       = document.getElementById("btn-sintesi");
 const resetBtn         = document.getElementById("reset-btn");
 
-// LOGIN — nessun bypass automatico
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const password = passwordInput.value.trim();
@@ -80,12 +79,10 @@ function costruisciSidebar() {
     const btn = document.createElement("button");
     btn.className = "agente-btn";
     btn.dataset.id = sp.id;
-    const badgeClass = sp.modello === "claude" ? "badge-claude" : "badge-llama";
-    const badgeLabel = sp.modello === "claude" ? "profondo" : "rapido";
     btn.innerHTML = `
       <span class="btn-emoji">${sp.emoji}</span>
       <span class="btn-nome">${sp.nome}</span>
-      <span class="btn-badge ${badgeClass}">${badgeLabel}</span>
+      <span class="btn-badge badge-llama">rapido</span>
     `;
     btn.addEventListener("click", () => {
       const testo = domandaCorrente || domandaInput.value.trim();
@@ -98,12 +95,11 @@ function costruisciSidebar() {
   });
 }
 
-// Invio form — primo agente disponibile tra i pensatori
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const testo = domandaInput.value.trim();
   if (!testo || occupato) return;
-  const primo = SPECIALISTI.find(s => s.gruppo === "pensatori");
+  const primo = SPECIALISTI[0];
   eseguiAgente(primo, testo);
 });
 
@@ -122,14 +118,12 @@ async function eseguiAgente(sp, testo) {
 
   segnaAttivo(sp.id);
   setDisabilitati(true);
-  aggiungiSistema(`${sp.emoji} ${sp.nome} sta cercando e pensando…`);
+  aggiungiSistema(sp.emoji + " " + sp.nome + " sta pensando…");
   const ind = mostraIndicatore(sp.nome);
   scorri();
 
   try {
-    const tipo = sp.id === "direttore" ? "direttore" : "specialista";
-    const body = { tipo, domanda: domandaCorrente, contesto: conversazione };
-    if (tipo === "specialista") body.agente = sp.id;
+    const body = { tipo: "specialista", domanda: domandaCorrente, agente: sp.id, contesto: conversazione };
 
     const res = await fetch("/.netlify/functions/chat", {
       method: "POST",
@@ -171,7 +165,7 @@ btnSintesi.addEventListener("click", async () => {
   if (conversazione.length === 0 || occupato) return;
   occupato = true;
   setDisabilitati(true);
-  aggiungiSistema("🔮 Visione d'insieme in elaborazione…");
+  aggiungiSistema("🔮 Visione d insieme in elaborazione…");
   const ind = mostraIndicatore("Elaborazione");
   scorri();
   try {
@@ -218,24 +212,20 @@ function aggiungiBollaUtente(testo) {
   div.className = "bolla-utente";
   div.textContent = testo;
   conversazioneDiv.appendChild(div);
+  scorri();
 }
 
 function aggiungiBolla(data, sintesi = false) {
   const div = document.createElement("div");
-  div.className = "bolla-agente";
+  div.className = "bolla-agente bolla-llama";
   if (sintesi) div.classList.add("bolla-sintesi");
-  if (data.modello === "claude") div.classList.add("bolla-claude");
-  else div.classList.add("bolla-llama");
-
-  const badgeClass = data.modello === "claude" ? "badge-claude" : "badge-llama";
-  const badgeLabel = data.modello === "claude" ? "profondo" : "rapido";
 
   const header = document.createElement("div");
   header.className = "agente-header";
   header.innerHTML = `
     <div class="agente-emoji">${data.emoji || "🟡"}</div>
     <div>
-      <div class="agente-nome">${esc(data.agente || "")} <span class="badge-modello ${badgeClass}">${badgeLabel}</span></div>
+      <div class="agente-nome">${esc(data.agente || "")} <span class="badge-modello badge-llama">rapido</span></div>
       <div class="agente-ruolo">${esc(data.ruolo || "")}</div>
     </div>`;
 
@@ -247,7 +237,11 @@ function aggiungiBolla(data, sintesi = false) {
   div.appendChild(contenuto);
   conversazioneDiv.appendChild(div);
 
-  setTimeout(() => div.scrollIntoView({ behavior: "smooth", block: "end" }), 80);
+  // SCROLL GARANTITO
+  setTimeout(() => {
+    conversazioneDiv.scrollTop = conversazioneDiv.scrollHeight;
+    div.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, 100);
 }
 
 function formatta(testo) {
@@ -279,6 +273,7 @@ function aggiungiSistema(testo) {
   div.className = "msg-sistema";
   div.textContent = testo;
   conversazioneDiv.appendChild(div);
+  scorri();
 }
 
 function mostraErrore(msg) {
