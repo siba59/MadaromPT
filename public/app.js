@@ -66,15 +66,6 @@ function mostraApp() {
   appScreen.classList.remove("nascosto");
 }
 
-// Quando cambi agente e c'è già una domanda attiva — parte automaticamente
-agenteSelect.addEventListener("change", () => {
-  if (domandaCorrente && !occupato) {
-    const id = agenteSelect.value;
-    const sp = SPECIALISTI[id];
-    if (sp) eseguiAgente(sp, domandaCorrente);
-  }
-});
-
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const testo = domandaInput.value.trim();
@@ -92,10 +83,9 @@ async function eseguiAgente(sp, testo) {
   const primaRisposta = !domandaCorrente;
   if (primaRisposta) {
     domandaCorrente = testo;
-    domandaInput.value = "";
-    domandaInput.style.height = "auto";
     rimuoviBenvenuto();
     aggiungiBollaUtente(testo);
+    // NON svuotare il campo — resta la domanda per usarla con altri agenti
   }
 
   inviaBtn.disabled = true;
@@ -172,6 +162,8 @@ resetBtn.addEventListener("click", () => {
   if (!confirm("Nuova conversazione?")) return;
   conversazione = [];
   domandaCorrente = null;
+  domandaInput.value = "";
+  domandaInput.style.height = "auto";
   conversazioneDiv.innerHTML = `
     <div class="msg-benvenuto">
       <h2>Dipartimento Madarom</h2>
