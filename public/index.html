@@ -22,17 +22,16 @@
   --fw: 'Playfair Display', Georgia, serif;
   --fb: 'IBM Plex Sans', sans-serif;
   --fm: 'IBM Plex Mono', monospace;
+  --topbar-h: 54px;
+  --input-h: 66px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { height: 100%; }
-body { height: 100%; background: var(--nero); color: var(--bianco); font-family: var(--fb); font-size: 15px; line-height: 1.6; }
+html, body { height: 100%; background: var(--nero); color: var(--bianco); font-family: var(--fb); font-size: 15px; line-height: 1.6; }
 .nascosto { display: none !important; }
 
-/* LOGIN */
 #login-screen {
   display: flex; align-items: center; justify-content: center; height: 100%;
-  background: var(--nero);
-  background-image: radial-gradient(ellipse at 50% 25%, #1a1200 0%, transparent 65%);
+  background: radial-gradient(ellipse at 50% 25%, #1a1200 0%, transparent 65%), var(--nero);
 }
 .login-box { width: 320px; padding: 48px 32px 40px; border: 1px solid #2a2400; background: var(--nero-card); text-align: center; }
 .login-logo { font-size: 2.2rem; margin-bottom: 14px; }
@@ -44,29 +43,24 @@ body { height: 100%; background: var(--nero); color: var(--bianco); font-family:
 #login-btn:disabled { opacity: .45; cursor: not-allowed; }
 #login-error { color: var(--rosso); font-family: var(--fm); font-size: .75rem; margin-top: 10px; min-height: 1.2em; }
 
-/* APP - layout fisso */
-#app-screen {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  display: flex;
-  flex-direction: column;
-}
+#app-screen { display: block; height: 100%; position: relative; }
 
-/* TOPBAR */
 #topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--topbar-h);
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 0 14px;
   background: var(--nero-card);
   border-bottom: 1px solid var(--nero-border);
-  flex-shrink: 0;
+  z-index: 100;
 }
 .topbar-logo { font-size: 1.1rem; flex-shrink: 0; }
 .topbar-title { font-family: var(--fw); font-size: .9rem; color: var(--oro); font-weight: 700; flex-shrink: 0; }
 #agente-select {
-  flex: 1;
-  min-width: 0;
+  flex: 1; min-width: 0;
   background: var(--grigio-scuro);
   border: 1px solid var(--nero-border);
   color: var(--bianco);
@@ -78,42 +72,54 @@ body { height: 100%; background: var(--nero); color: var(--bianco); font-family:
 }
 #agente-select:focus { border-color: var(--oro); }
 #btn-sintesi {
-  background: transparent;
-  border: 1px solid #4a3800;
-  color: var(--oro);
-  padding: 6px 10px;
-  border-radius: var(--r);
-  font-family: var(--fm);
-  font-size: .68rem;
-  cursor: pointer;
-  flex-shrink: 0;
-  white-space: nowrap;
+  background: transparent; border: 1px solid #4a3800; color: var(--oro);
+  padding: 6px 10px; border-radius: var(--r); font-family: var(--fm); font-size: .68rem;
+  cursor: pointer; flex-shrink: 0; white-space: nowrap;
 }
 #btn-sintesi:disabled { opacity: .35; cursor: not-allowed; }
 #reset-btn {
-  background: none;
-  border: 1px solid var(--grigio-scuro);
-  color: var(--grigio-testo);
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: .9rem;
-  flex-shrink: 0;
+  background: none; border: 1px solid var(--grigio-scuro); color: var(--grigio-testo);
+  width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: .9rem; flex-shrink: 0;
 }
 
-/* CONVERSAZIONE - scorre */
 #conversazione {
-  flex: 1;
-  overflow-y: auto; height: 0;
-  overflow-x: hidden;
+  position: fixed;
+  top: var(--topbar-h);
+  left: 0; right: 0;
+  bottom: var(--input-h);
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
   padding: 20px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  -webkit-overflow-scrolling: touch;
+  background: var(--nero);
 }
-#conversazione::-webkit-scrollbar { width: 3px; }
-#conversazione::-webkit-scrollbar-thumb { background: var(--grigio-scuro); }
+
+#input-area {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--input-h);
+  padding: 12px 14px;
+  background: var(--nero-card);
+  border-top: 1px solid var(--nero-border);
+  z-index: 100;
+}
+#chat-form { display: flex; gap: 8px; align-items: flex-end; }
+#domanda-input {
+  flex: 1; background: var(--grigio-scuro); border: 1px solid var(--nero-border);
+  color: var(--bianco); padding: 10px 14px; font-family: var(--fb); font-size: .88rem;
+  resize: none; outline: none; border-radius: var(--r); min-height: 42px; max-height: 42px;
+  transition: border-color .2s; -webkit-appearance: none;
+}
+#domanda-input:focus { border-color: var(--oro); }
+#domanda-input::placeholder { color: var(--grigio-mid); }
+#invia-btn {
+  background: var(--oro); color: var(--nero); border: none;
+  width: 42px; height: 42px; border-radius: var(--r); font-size: 1.1rem; font-weight: bold;
+  cursor: pointer; flex-shrink: 0;
+}
+#invia-btn:disabled { opacity: .38; cursor: not-allowed; }
 
 .msg-benvenuto { max-width: 480px; margin: 32px auto 0; text-align: center; padding: 32px 24px; border: 1px solid var(--nero-border); background: var(--nero-card); }
 .msg-benvenuto h2 { font-family: var(--fw); font-size: 1.4rem; color: var(--oro); margin-bottom: 8px; }
@@ -140,45 +146,6 @@ body { height: 100%; background: var(--nero); color: var(--bianco); font-family:
 .puntini span:nth-child(2) { animation-delay: .2s; }
 .puntini span:nth-child(3) { animation-delay: .4s; }
 @keyframes pulsa { 0%,80%,100% { opacity:.2; transform:scale(.8); } 40% { opacity:1; transform:scale(1); } }
-
-/* INPUT - fisso in fondo */
-#input-area {
-  flex-shrink: 0;
-  border-top: 1px solid var(--nero-border);
-  padding: 12px 14px;
-  background: var(--nero-card);
-}
-#chat-form { display: flex; gap: 8px; align-items: flex-end; }
-#domanda-input {
-  flex: 1;
-  background: var(--grigio-scuro);
-  border: 1px solid var(--nero-border);
-  color: var(--bianco);
-  padding: 10px 14px;
-  font-family: var(--fb);
-  font-size: .88rem;
-  resize: none;
-  outline: none;
-  border-radius: var(--r);
-  min-height: 42px;
-  max-height: 120px;
-  transition: border-color .2s;
-  -webkit-appearance: none;
-}
-#domanda-input:focus { border-color: var(--oro); }
-#domanda-input::placeholder { color: var(--grigio-mid); }
-#invia-btn {
-  background: var(--oro);
-  color: var(--nero);
-  border: none;
-  width: 42px; height: 42px;
-  border-radius: var(--r);
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-#invia-btn:disabled { opacity: .38; cursor: not-allowed; }
 </style>
 </head>
 <body>
