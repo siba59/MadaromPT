@@ -109,7 +109,7 @@ async function eseguiAgente(sp, testo) {
     if (res.status === 401) {
       loginScreen.classList.remove("nascosto");
       appScreen.classList.add("nascosto");
-      loginError.textContent = "Sessione scaduta — inserisci di nuovo la password";
+      loginError.textContent = "Sessione scaduta";
       return;
     }
 
@@ -172,7 +172,7 @@ resetBtn.addEventListener("click", () => {
   conversazioneDiv.innerHTML = `
     <div class="msg-benvenuto">
       <h2>Dipartimento Madarom</h2>
-      <p>Scegli un agente dal menu in alto, scrivi la domanda e premi →</p>
+      <p>Scegli un agente dal menu, scrivi la domanda e premi →</p>
     </div>`;
   aggiornaSintesi();
 });
@@ -211,10 +211,7 @@ function aggiungiBolla(data, sintesi = false) {
   div.appendChild(header);
   div.appendChild(contenuto);
   conversazioneDiv.appendChild(div);
-
-  setTimeout(() => {
-    conversazioneDiv.scrollTop = conversazioneDiv.scrollHeight;
-  }, 100);
+  scorri();
 }
 
 function formatta(testo) {
@@ -265,9 +262,9 @@ function aggiornaSintesi() {
 }
 
 function scorri() {
-  requestAnimationFrame(() => {
+  setTimeout(() => {
     conversazioneDiv.scrollTop = conversazioneDiv.scrollHeight;
-  });
+  }, 200);
 }
 
 domandaInput.addEventListener("input", () => {
