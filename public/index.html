@@ -16,9 +16,7 @@
   --bianco: #f0ede8;
   --bianco-dim: #c8c4bc;
   --oro: #c9a84c;
-  --oro-chiaro: #e8c96a;
   --verde: #3a7a3a;
-  --verde-dim: #1d331d;
   --rosso: #c0392b;
   --r: 5px;
   --fw: 'Playfair Display', Georgia, serif;
@@ -26,12 +24,13 @@
   --fm: 'IBM Plex Mono', monospace;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; background: var(--nero); color: var(--bianco); font-family: var(--fb); font-size: 15px; line-height: 1.6; overflow: hidden; }
+html { height: 100%; }
+body { height: 100%; background: var(--nero); color: var(--bianco); font-family: var(--fb); font-size: 15px; line-height: 1.6; }
 .nascosto { display: none !important; }
 
 /* LOGIN */
 #login-screen {
-  display: flex; align-items: center; justify-content: center; height: 100vh;
+  display: flex; align-items: center; justify-content: center; height: 100%;
   background: var(--nero);
   background-image: radial-gradient(ellipse at 50% 25%, #1a1200 0%, transparent 65%);
 }
@@ -45,8 +44,13 @@ html, body { height: 100%; background: var(--nero); color: var(--bianco); font-f
 #login-btn:disabled { opacity: .45; cursor: not-allowed; }
 #login-error { color: var(--rosso); font-family: var(--fm); font-size: .75rem; margin-top: 10px; min-height: 1.2em; }
 
-/* APP */
-#app-screen { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+/* APP - layout fisso */
+#app-screen {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
 
 /* TOPBAR */
 #topbar {
@@ -57,16 +61,12 @@ html, body { height: 100%; background: var(--nero); color: var(--bianco); font-f
   background: var(--nero-card);
   border-bottom: 1px solid var(--nero-border);
   flex-shrink: 0;
-  flex-wrap: wrap;
 }
-
-.topbar-logo { font-size: 1.1rem; }
+.topbar-logo { font-size: 1.1rem; flex-shrink: 0; }
 .topbar-title { font-family: var(--fw); font-size: .9rem; color: var(--oro); font-weight: 700; flex-shrink: 0; }
-
-/* Select agente */
 #agente-select {
   flex: 1;
-  min-width: 160px;
+  min-width: 0;
   background: var(--grigio-scuro);
   border: 1px solid var(--nero-border);
   color: var(--bianco);
@@ -75,44 +75,38 @@ html, body { height: 100%; background: var(--nero); color: var(--bianco); font-f
   font-size: .82rem;
   border-radius: var(--r);
   outline: none;
-  cursor: pointer;
 }
 #agente-select:focus { border-color: var(--oro); }
-
+#btn-sintesi {
+  background: transparent;
+  border: 1px solid #4a3800;
+  color: var(--oro);
+  padding: 6px 10px;
+  border-radius: var(--r);
+  font-family: var(--fm);
+  font-size: .68rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+#btn-sintesi:disabled { opacity: .35; cursor: not-allowed; }
 #reset-btn {
   background: none;
   border: 1px solid var(--grigio-scuro);
   color: var(--grigio-testo);
-  width: 30px;
-  height: 30px;
+  width: 30px; height: 30px;
   border-radius: 50%;
   cursor: pointer;
   font-size: .9rem;
   flex-shrink: 0;
 }
-#reset-btn:hover { border-color: var(--oro); color: var(--oro); }
 
-#btn-sintesi {
-  background: transparent;
-  border: 1px solid #4a3800;
-  color: var(--oro);
-  padding: 6px 12px;
-  border-radius: var(--r);
-  font-family: var(--fm);
-  font-size: .7rem;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-#btn-sintesi:disabled { opacity: .35; cursor: not-allowed; }
-
-/* CHAT */
-#chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--nero); }
-
+/* CONVERSAZIONE - scorre */
 #conversazione {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 20px 16px;
+  padding: 20px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -127,7 +121,7 @@ html, body { height: 100%; background: var(--nero); color: var(--bianco); font-f
 
 .bolla-utente { align-self: flex-end; max-width: 80%; background: var(--grigio-scuro); border: 1px solid #333; padding: 10px 16px; border-radius: var(--r); font-size: .88rem; color: var(--bianco); word-wrap: break-word; }
 
-.bolla-agente { align-self: flex-start; max-width: 100%; width: 100%; background: var(--nero-card); border: 1px solid var(--nero-border); border-left: 3px solid var(--verde); border-radius: var(--r); overflow: hidden; word-wrap: break-word; }
+.bolla-agente { align-self: flex-start; width: 100%; background: var(--nero-card); border: 1px solid var(--nero-border); border-left: 3px solid var(--verde); border-radius: var(--r); overflow: hidden; word-wrap: break-word; }
 .bolla-agente.bolla-sintesi { border-left-color: var(--oro); }
 
 .agente-header { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--nero-border); background: rgba(255,255,255,.02); }
@@ -139,7 +133,7 @@ html, body { height: 100%; background: var(--nero); color: var(--bianco); font-f
 .agente-contenuto p { margin-bottom: 12px; }
 .agente-contenuto p:last-child { margin-bottom: 0; }
 
-.msg-sistema { align-self: center; font-family: var(--fm); font-size: .65rem; color: var(--grigio-testo); padding: 2px 0; }
+.msg-sistema { align-self: center; font-family: var(--fm); font-size: .65rem; color: var(--grigio-testo); }
 .indicatore-scrittura { align-self: flex-start; display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--nero-card); border: 1px solid var(--nero-border); border-radius: var(--r); font-family: var(--fm); font-size: .7rem; color: var(--grigio-testo); }
 .puntini { display: flex; gap: 4px; }
 .puntini span { width: 5px; height: 5px; background: var(--oro); border-radius: 50%; animation: pulsa 1.2s ease-in-out infinite; }
@@ -147,13 +141,43 @@ html, body { height: 100%; background: var(--nero); color: var(--bianco); font-f
 .puntini span:nth-child(3) { animation-delay: .4s; }
 @keyframes pulsa { 0%,80%,100% { opacity:.2; transform:scale(.8); } 40% { opacity:1; transform:scale(1); } }
 
-/* INPUT */
-#input-area { border-top: 1px solid var(--nero-border); padding: 12px 14px 10px; background: var(--nero-card); flex-shrink: 0; }
+/* INPUT - fisso in fondo */
+#input-area {
+  flex-shrink: 0;
+  border-top: 1px solid var(--nero-border);
+  padding: 12px 14px;
+  background: var(--nero-card);
+}
 #chat-form { display: flex; gap: 8px; align-items: flex-end; }
-#domanda-input { flex: 1; background: var(--grigio-scuro); border: 1px solid var(--nero-border); color: var(--bianco); padding: 10px 14px; font-family: var(--fb); font-size: .88rem; resize: none; outline: none; border-radius: var(--r); min-height: 42px; max-height: 140px; transition: border-color .2s; -webkit-appearance: none; }
+#domanda-input {
+  flex: 1;
+  background: var(--grigio-scuro);
+  border: 1px solid var(--nero-border);
+  color: var(--bianco);
+  padding: 10px 14px;
+  font-family: var(--fb);
+  font-size: .88rem;
+  resize: none;
+  outline: none;
+  border-radius: var(--r);
+  min-height: 42px;
+  max-height: 120px;
+  transition: border-color .2s;
+  -webkit-appearance: none;
+}
 #domanda-input:focus { border-color: var(--oro); }
 #domanda-input::placeholder { color: var(--grigio-mid); }
-#invia-btn { background: var(--oro); color: var(--nero); border: none; width: 42px; height: 42px; border-radius: var(--r); font-size: 1.1rem; font-weight: bold; cursor: pointer; flex-shrink: 0; }
+#invia-btn {
+  background: var(--oro);
+  color: var(--nero);
+  border: none;
+  width: 42px; height: 42px;
+  border-radius: var(--r);
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  flex-shrink: 0;
+}
 #invia-btn:disabled { opacity: .38; cursor: not-allowed; }
 </style>
 </head>
@@ -177,45 +201,44 @@ html, body { height: 100%; background: var(--nero); color: var(--bianco); font-f
     <span class="topbar-logo">🟡</span>
     <span class="topbar-title">Madarom</span>
     <select id="agente-select">
-      <optgroup label="💎 Pensatori profondi">
+      <optgroup label="💎 Pensatori">
         <option value="maestro_allenatore">⚽ Maestro Allenatore PT</option>
         <option value="filosofo">🌍 Filosofo</option>
         <option value="pedagogista">📚 Pedagogista</option>
-        <option value="tuttologo">🧭 Tuttologo Consapevole</option>
+        <option value="tuttologo">🧭 Tuttologo</option>
         <option value="neuroscienziato">🧠 Neuroscienziato</option>
       </optgroup>
-      <optgroup label="⚡ Specialisti operativi">
-        <option value="tattico">♟️ Esperto Tattico</option>
-        <option value="tecnico">🎯 Esperto Tecnico</option>
+      <optgroup label="⚡ Specialisti">
+        <option value="tattico">♟️ Tattico</option>
+        <option value="tecnico">🎯 Tecnico</option>
         <option value="fisiologo">🏃 Fisiologo</option>
-        <option value="psicologo">🧘 Psicologo dello sport</option>
-        <option value="matematico">📐 Matematico complessita</option>
-        <option value="economista">💼 Economista calcio africano</option>
-        <option value="traduttore">🌐 Traduttore-Localizzatore</option>
+        <option value="psicologo">🧘 Psicologo</option>
+        <option value="matematico">📐 Matematico</option>
+        <option value="economista">💼 Economista</option>
+        <option value="traduttore">🌐 Traduttore</option>
         <option value="web_editor">✍️ Web Editor</option>
       </optgroup>
-      <optgroup label="─────────────">
-        <option value="direttore">🔮 Visione d insieme</option>
+      <optgroup label="──────────">
+        <option value="direttore">🔮 Visione insieme</option>
       </optgroup>
     </select>
     <button id="btn-sintesi" class="nascosto">🔮 Sintesi</button>
     <button id="reset-btn" title="Nuova conversazione">↺</button>
   </div>
 
-  <main id="chat-area">
-    <div id="conversazione">
-      <div class="msg-benvenuto">
-        <h2>Dipartimento Madarom</h2>
-        <p>Scegli un agente dal menu in alto, scrivi la domanda e premi →</p>
-      </div>
+  <div id="conversazione">
+    <div class="msg-benvenuto">
+      <h2>Dipartimento Madarom</h2>
+      <p>Scegli un agente dal menu, scrivi la domanda e premi →</p>
     </div>
-    <div id="input-area">
-      <form id="chat-form">
-        <textarea id="domanda-input" placeholder="Scrivi la tua domanda…" rows="1"></textarea>
-        <button type="submit" id="invia-btn">→</button>
-      </form>
-    </div>
-  </main>
+  </div>
+
+  <div id="input-area">
+    <form id="chat-form">
+      <textarea id="domanda-input" placeholder="Scrivi la tua domanda…" rows="1"></textarea>
+      <button type="submit" id="invia-btn">→</button>
+    </form>
+  </div>
 </div>
 
 <script src="app.js"></script>
