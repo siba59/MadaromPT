@@ -50,7 +50,7 @@ export default async (req) => {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Set-Cookie": `madarom_auth=${token}; HttpOnly; Path=/; Max-Age=${8 * 60 * 60}`
+        "Set-Cookie": `madarom_auth=${token}; HttpOnly; Path=/; Max-Age=${8 * 60 * 60}; SameSite=Lax`
       }
     }
   );
