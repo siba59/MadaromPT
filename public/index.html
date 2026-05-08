@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dipartimento Madarom</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --nero: #0a0a0a;
+  --nero-card: #111;
+  --nero-border: #1e1e1e;
+  --grigio-scuro: #2a2a2a;
+  --grigio-mid: #555;
+  --grigio-testo: #888;
+  --bianco: #f0ede8;
+  --bianco-dim: #c8c4bc;
+  --oro: #c9a84c;
+  --oro-chiaro: #e8c96a;
+  --blu: #4a7fa5;
+  --blu-dim: #1d3347;
+  --verde: #3a7a3a;
+  --verde-dim: #1d331d;
+  --rosso: #c0392b;
+  --r: 5px;
+  --fw: 'Playfair Display', Georgia, serif;
+  --fb: 'IBM Plex Sans', sans-serif;
+  --fm: 'IBM Plex Mono', monospace;
+  --sidebar-w: 260px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--nero); color: var(--bianco); font-family: var(--fb); font-size: 15px; line-height: 1.6; overflow: hidden; }
+.nascosto { display: none !important; }
+
+/* LOGIN */
+#login-screen {
+  display: flex; align-items: center; justify-content: center; height: 100vh;
+  background: var(--nero);
+  background-image: radial-gradient(ellipse at 50% 25%, #1a1200 0%, transparent 65%);
+}
+.login-box { width: 320px; padding: 48px 32px 40px; border: 1px solid #2a2400; background: var(--nero-card); text-align: center; }
+.login-logo { font-size: 2.2rem; margin-bottom: 14px; }
+.login-title { font-family: var(--fw); font-size: 1.75rem; color: var(--oro); line-height: 1.15; margin-bottom: 6px; }
+.login-sub { font-family: var(--fm); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--grigio-testo); margin-bottom: 32px; }
+#login-form input { width: 100%; background: var(--grigio-scuro); border: 1px solid var(--nero-border); color: var(--bianco); padding: 12px 16px; font-family: var(--fm); font-size: .9rem; margin-bottom: 12px; outline: none; transition: border-color .2s; }
+#login-form input:focus { border-color: var(--oro); }
+#login-btn { width: 100%; background: var(--oro); color: var(--nero); border: none; padding: 12px; font-family: var(--fm); font-size: .82rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+#login-btn:disabled { opacity: .45; cursor: not-allowed; }
+#login-error { color: var(--rosso); font-family: var(--fm); font-size: .75rem; margin-top: 10px; min-height: 1.2em; }
+
+/* APP */
+#app-screen { display: flex; height: 100vh; overflow: hidden; }
+
+/* SIDEBAR */
+#sidebar { width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--nero-card); border-right: 1px solid var(--nero-border); display: flex; flex-direction: column; overflow: hidden; }
+.sidebar-header { display: flex; align-items: center; gap: 10px; padding: 16px 14px; border-bottom: 1px solid var(--nero-border); flex-shrink: 0; }
+.sidebar-logo { font-size: 1.15rem; }
+.sidebar-title { font-family: var(--fw); font-size: .95rem; color: var(--oro); font-weight: 700; flex: 1; }
+#reset-btn { background: none; border: 1px solid var(--grigio-scuro); color: var(--grigio-testo); width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: .9rem; }
+#reset-btn:hover { border-color: var(--oro); color: var(--oro); }
+.sidebar-scroll { flex: 1; overflow-y: auto; padding-bottom: 8px; }
+.sidebar-scroll::-webkit-scrollbar { width: 3px; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: var(--grigio-scuro); }
+
+/* Gruppi accordion */
+.gruppo { border-bottom: 1px solid var(--nero-border); }
+.gruppo-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px 8px; cursor: pointer; user-select: none; }
+.gruppo-icona { font-size: .9rem; }
+.gruppo-label { font-family: var(--fm); font-size: .65rem; letter-spacing: .14em; text-transform: uppercase; color: var(--grigio-testo); flex: 1; }
+.gruppo-toggle { font-size: .6rem; color: var(--grigio-testo); transition: transform .2s; }
+.gruppo.chiuso .gruppo-toggle { transform: rotate(-90deg); }
+.gruppo.chiuso .gruppo-lista { display: none; }
+.gruppo-lista { padding: 0 8px 8px; display: flex; flex-direction: column; gap: 2px; }
+
+/* Bottoni agente */
+.agente-btn { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border: 1px solid transparent; border-radius: var(--r); background: transparent; color: var(--bianco-dim); cursor: pointer; font-family: var(--fb); font-size: .8rem; text-align: left; width: 100%; transition: background .12s; }
+.agente-btn:hover { background: var(--grigio-scuro); color: var(--bianco); border-color: var(--nero-border); }
+.agente-btn.attivo { background: #1a1200; border-color: #3a2e00; color: var(--oro-chiaro); }
+.agente-btn:disabled { opacity: .38; cursor: not-allowed; }
+.btn-emoji { font-size: .95rem; flex-shrink: 0; }
+.btn-nome { flex: 1; line-height: 1.3; }
+.btn-badge { font-family: var(--fm); font-size: .55rem; padding: 2px 5px; border-radius: 3px; flex-shrink: 0; }
+.badge-claude { background: var(--blu-dim); color: #7ab3d4; }
+.badge-llama { background: var(--verde-dim); color: #8cc88c; }
+
+/* Footer sidebar */
+.sidebar-footer { flex-shrink: 0; padding: 10px 8px; border-top: 1px solid var(--nero-border); }
+#btn-sintesi { width: 100%; background: transparent; border: 1px solid #333; color: var(--grigio-testo); padding: 8px 14px; border-radius: var(--r); font-family: var(--fm); font-size: .72rem; cursor: pointer; transition: border-color .2s, color .2s; }
+#btn-sintesi:hover { border-color: var(--oro); color: var(--oro); }
+#btn-sintesi:disabled { opacity: .35; cursor: not-allowed; }
+
+/* CHAT */
+#chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--nero); min-width: 0; }
+#conversazione { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 32px 36px; display: flex; flex-direction: column; gap: 22px; }
+#conversazione::-webkit-scrollbar { width: 4px; }
+#conversazione::-webkit-scrollbar-thumb { background: var(--grigio-scuro); border-radius: 2px; }
+
+.msg-benvenuto { max-width: 520px; margin: 48px auto 0; text-align: center; padding: 44px 40px; border: 1px solid var(--nero-border); background: var(--nero-card); }
+.msg-benvenuto h2 { font-family: var(--fw); font-size: 1.55rem; color: var(--oro); margin-bottom: 10px; }
+.msg-benvenuto p { color: var(--grigio-testo); font-size: .88rem; line-height: 1.6; }
+
+.bolla-utente { align-self: flex-end; max-width: 62%; background: var(--grigio-scuro); border: 1px solid #333; padding: 12px 18px; border-radius: var(--r); font-size: .9rem; color: var(--bianco); word-wrap: break-word; }
+
+.bolla-agente { align-self: flex-start; max-width: 88%; background: var(--nero-card); border: 1px solid var(--nero-border); border-left: 3px solid var(--grigio-mid); border-radius: var(--r); overflow: hidden; word-wrap: break-word; }
+.bolla-agente.bolla-claude { border-left-color: var(--blu); }
+.bolla-agente.bolla-llama { border-left-color: var(--verde); }
+.bolla-agente.bolla-sintesi { border-left-color: var(--oro); }
+
+.agente-header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--nero-border); background: rgba(255,255,255,.02); }
+.agente-emoji { font-size: 1.1rem; flex-shrink: 0; }
+.agente-nome { font-size: .82rem; font-weight: 500; color: var(--bianco); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.agente-ruolo { font-family: var(--fm); font-size: .63rem; color: var(--grigio-testo); margin-top: 2px; }
+.badge-modello { font-family: var(--fm); font-size: .55rem; padding: 2px 5px; border-radius: 3px; }
+
+.agente-contenuto { padding: 18px 20px; font-size: .88rem; line-height: 1.8; color: var(--bianco-dim); }
+.agente-contenuto p { margin-bottom: 14px; }
+.agente-contenuto p:last-child { margin-bottom: 0; }
+
+.msg-sistema { align-self: center; font-family: var(--fm); font-size: .67rem; color: var(--grigio-testo); padding: 2px 0; }
+.indicatore-scrittura { align-self: flex-start; display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--nero-card); border: 1px solid var(--nero-border); border-radius: var(--r); font-family: var(--fm); font-size: .72rem; color: var(--grigio-testo); }
+.puntini { display: flex; gap: 4px; }
+.puntini span { width: 5px; height: 5px; background: var(--oro); border-radius: 50%; animation: pulsa 1.2s ease-in-out infinite; }
+.puntini span:nth-child(2) { animation-delay: .2s; }
+.puntini span:nth-child(3) { animation-delay: .4s; }
+@keyframes pulsa { 0%,80%,100% { opacity:.2; transform:scale(.8); } 40% { opacity:1; transform:scale(1); } }
+
+/* INPUT */
+#input-area { border-top: 1px solid var(--nero-border); padding: 16px 24px 14px; background: var(--nero-card); flex-shrink: 0; }
+#chat-form { display: flex; gap: 10px; align-items: flex-end; }
+#domanda-input { flex: 1; background: var(--grigio-scuro); border: 1px solid var(--nero-border); color: var(--bianco); padding: 11px 16px; font-family: var(--fb); font-size: .9rem; resize: none; outline: none; border-radius: var(--r); min-height: 44px; max-height: 160px; transition: border-color .2s; }
+#domanda-input:focus { border-color: var(--oro); }
+#domanda-input::placeholder { color: var(--grigio-mid); }
+#invia-btn { background: var(--oro); color: var(--nero); border: none; width: 44px; height: 44px; border-radius: var(--r); font-size: 1.1rem; font-weight: bold; cursor: pointer; flex-shrink: 0; }
+#invia-btn:disabled { opacity: .38; cursor: not-allowed; }
+.input-hint { font-family: var(--fm); font-size: .63rem; color: var(--grigio-mid); margin-top: 7px; }
+
+/* MOBILE */
+@media (max-width: 700px) {
+  #app-screen { flex-direction: column; }
+  #sidebar { width: 100%; min-width: unset; max-height: 44vh; border-right: none; border-bottom: 1px solid var(--nero-border); }
+  .gruppo-lista { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+  .agente-btn { flex-direction: column; align-items: center; text-align: center; padding: 7px 5px; font-size: .68rem; min-width: 68px; max-width: 85px; }
+  .btn-badge { display: none; }
+  .bolla-utente, .bolla-agente { max-width: 97%; }
+  #conversazione { padding: 14px 12px; gap: 14px; }
+  #input-area { padding: 10px 12px 8px; }
+  .msg-benvenuto { margin: 12px auto 0; padding: 20px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🟡</div>
+    <h1 class="login-title">Dipartimento<br>Madarom</h1>
+    <p class="login-sub">Accesso riservato</p>
+    <form id="login-form" autocomplete="off">
+      <input type="password" id="password-input" placeholder="Password" autocomplete="current-password"/>
+      <button type="submit" id="login-btn">Entra</button>
+      <p id="login-error"></p>
+    </form>
+  </div>
+</div>
+
+<div id="app-screen" class="nascosto">
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-logo">🟡</span>
+      <span class="sidebar-title">Madarom</span>
+      <button id="reset-btn" title="Nuova conversazione">↺</button>
+    </div>
+    <div class="sidebar-scroll">
+      <div class="gruppo" id="gruppo-pensatori">
+        <div class="gruppo-header" onclick="toggleGruppo('gruppo-pensatori')">
+          <span class="gruppo-icona">💎</span>
+          <span class="gruppo-label">Pensatori profondi</span>
+          <span class="gruppo-toggle">▼</span>
+        </div>
+        <div class="gruppo-lista" id="lista-pensatori"></div>
+      </div>
+      <div class="gruppo chiuso" id="gruppo-specialisti">
+        <div class="gruppo-header" onclick="toggleGruppo('gruppo-specialisti')">
+          <span class="gruppo-icona">⚡</span>
+          <span class="gruppo-label">Specialisti operativi</span>
+          <span class="gruppo-toggle">▼</span>
+        </div>
+        <div class="gruppo-lista" id="lista-specialisti"></div>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <button id="btn-sintesi" class="nascosto">🔮 Visione d'insieme</button>
+    </div>
+  </aside>
+
+  <main id="chat-area">
+    <div id="conversazione">
+      <div class="msg-benvenuto">
+        <h2>Dipartimento Madarom</h2>
+        <p>Scrivi la tua domanda e scegli con chi vuoi confrontarti.<br>Sei tu il coordinatore.</p>
+      </div>
+    </div>
+    <div id="input-area">
+      <form id="chat-form">
+        <textarea id="domanda-input" placeholder="Scrivi la tua domanda…" rows="1"></textarea>
+        <button type="submit" id="invia-btn">→</button>
+      </form>
+      <p class="input-hint">Scegli un agente a sinistra · Ctrl+Invio per inviare</p>
+    </div>
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
