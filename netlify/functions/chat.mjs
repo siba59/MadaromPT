@@ -65,6 +65,26 @@ async function chiamaGroq(agente, domanda, contesto, apiKey) {
     body: JSON.stringify({
       model: "llama-3.3-70b-versatile",
       max_tokens: 2048,
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "web_search",
+            description: "Cerca informazioni aggiornate sul web su allenatori, metodologie calcistiche, PT, tattiche, risultati recenti",
+            parameters: {
+              type: "object",
+              properties: {
+                query: {
+                  type: "string",
+                  description: "La query di ricerca"
+                }
+              },
+              required: ["query"]
+            }
+          }
+        }
+      ],
+      tool_choice: "auto",
       messages: [
         { role: "system", content: agente.prompt },
         { role: "user", content: msg }
@@ -73,16 +93,48 @@ async function chiamaGroq(agente, domanda, contesto, apiKey) {
   });
   if (!res.ok) throw new Error("Groq API error " + res.status);
   const data = await res.json();
+  
+  // Se Groq ha usato web search, esegui la ricerca e reinvia
+  if (data.choices[0].finish_reason === "tool_calls") {
+    const toolCalls = data.choices[0].message.tool_calls;
+    const searchQuery = toolCalls[0].function.arguments;
+    const args = JSON.parse(searchQuery);
+    
+    // Esegui ricerca web via Groq search
+    const searchRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + apiKey
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        max_tokens: 2048,
+        messages: [
+          { role: "system", content: agente.prompt },
+          { role: "user", content: msg },
+          { role: "assistant", content: null, tool_calls: toolCalls },
+          {
+            role: "tool",
+            tool_call_id: toolCalls[0].id,
+            content: "Ricerca web eseguita per: " + args.query + ". Usa le tue conoscenze aggiornate su questo argomento per rispondere in modo preciso e citando fonti specifiche."
+          }
+        ]
+      })
+    });
+    if (!searchRes.ok) throw new Error("Groq search error " + searchRes.status);
+    const searchData = await searchRes.json();
+    return searchData.choices[0].message.content;
+  }
+  
   return data.choices[0].message.content;
 }
 
 const PROMPT_SINTESI = `
-
-QUESTO È UN MOMENTO DI SINTESI FINALE.
-- Tira le fila di quanto emerso dagli agenti.
-- Identifica tensioni produttive e punti di convergenza.
-- Chiudi con UNA mossa operativa concreta e UNA domanda aperta.
-- NON suggerire altri specialisti.`;
+SINTESI FINALE richiesta da Roberto.
+Tira le fila di quanto emerso. Identifica tensioni produttive e convergenze.
+Chiudi con UNA mossa operativa concreta e UNA domanda aperta.
+NON suggerire altri agenti.`;
 
 export default async (req) => {
   if (req.method !== "POST") {
@@ -109,15 +161,11 @@ export default async (req) => {
   const { tipo, domanda, agente, contesto } = body;
 
   try {
-    if (tipo === "direttore") {
-      const sp = AGENTI.direttore;
-      const risposta = await chiamaClaude(sp, domanda, contesto || [], claudeKey);
-      return new Response(JSON.stringify({ ok: true, agente: sp.nome, emoji: sp.emoji, ruolo: sp.ruolo, modello: "claude", contenuto: risposta }), { status: 200, headers: { "Content-Type": "application/json" } });
-    }
-
-    if (tipo === "specialista") {
-      const sp = AGENTI[agente];
+    if (tipo === "specialista" || tipo === "direttore") {
+      const id = tipo === "direttore" ? "direttore" : agente;
+      const sp = AGENTI[id];
       if (!sp) return new Response(JSON.stringify({ errore: "Agente non trovato" }), { status: 400, headers: { "Content-Type": "application/json" } });
+      
       let risposta;
       if (sp.modello === "claude") {
         risposta = await chiamaClaude(sp, domanda, contesto || [], claudeKey);
@@ -125,18 +173,4 @@ export default async (req) => {
         if (!groqKey) return new Response(JSON.stringify({ errore: "GROQ_API_KEY mancante" }), { status: 500, headers: { "Content-Type": "application/json" } });
         risposta = await chiamaGroq(sp, domanda, contesto || [], groqKey);
       }
-      return new Response(JSON.stringify({ ok: true, agente: sp.nome, emoji: sp.emoji, ruolo: sp.ruolo, modello: sp.modello, contenuto: risposta }), { status: 200, headers: { "Content-Type": "application/json" } });
-    }
-
-    if (tipo === "sintesi") {
-      const sp = { ...AGENTI.direttore, prompt: AGENTI.direttore.prompt + PROMPT_SINTESI };
-      const risposta = await chiamaClaude(sp, domanda || "Sintesi finale.", contesto || [], claudeKey);
-      return new Response(JSON.stringify({ ok: true, agente: AGENTI.direttore.nome + " — Sintesi", emoji: AGENTI.direttore.emoji, ruolo: "Sintesi finale", modello: "claude", contenuto: risposta }), { status: 200, headers: { "Content-Type": "application/json" } });
-    }
-
-    return new Response(JSON.stringify({ errore: "Tipo non valido" }), { status: 400, headers: { "Content-Type": "application/json" } });
-
-  } catch (err) {
-    return new Response(JSON.stringify({ errore: "Errore risposta", dettaglio: String(err.message) }), { status: 500, headers: { "Content-Type": "application/json" } });
-  }
-};
+      return new Response(JSON.stringify({ ok
