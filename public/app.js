@@ -1,18 +1,19 @@
-const SPECIALISTI = [
-  { id: "maestro_allenatore", nome: "Maestro Allenatore PT",      emoji: "⚽", modello: "llama", gruppo: "pensatori" },
-  { id: "filosofo",           nome: "Filosofo",                   emoji: "🌍", modello: "llama", gruppo: "pensatori" },
-  { id: "pedagogista",        nome: "Pedagogista",                emoji: "📚", modello: "llama", gruppo: "pensatori" },
-  { id: "tuttologo",          nome: "Tuttologo Consapevole",      emoji: "🧭", modello: "llama", gruppo: "pensatori" },
-  { id: "neuroscienziato",    nome: "Neuroscienziato",            emoji: "🧠", modello: "llama", gruppo: "pensatori" },
-  { id: "tattico",            nome: "Esperto Tattico",            emoji: "♟️", modello: "llama", gruppo: "specialisti" },
-  { id: "tecnico",            nome: "Esperto Tecnico",            emoji: "🎯", modello: "llama", gruppo: "specialisti" },
-  { id: "fisiologo",          nome: "Fisiologo",                  emoji: "🏃", modello: "llama", gruppo: "specialisti" },
-  { id: "psicologo",          nome: "Psicologo dello sport",      emoji: "🧘", modello: "llama", gruppo: "specialisti" },
-  { id: "matematico",         nome: "Matematico complessita",     emoji: "📐", modello: "llama", gruppo: "specialisti" },
-  { id: "economista",         nome: "Economista calcio africano", emoji: "💼", modello: "llama", gruppo: "specialisti" },
-  { id: "traduttore",         nome: "Traduttore-Localizzatore",   emoji: "🌐", modello: "llama", gruppo: "specialisti" },
-  { id: "web_editor",         nome: "Web Editor",                 emoji: "✍️", modello: "llama", gruppo: "specialisti" }
-];
+const SPECIALISTI = {
+  maestro_allenatore: { id: "maestro_allenatore", nome: "Maestro Allenatore PT", emoji: "⚽", ruolo: "PT come paradigma con molti interpreti" },
+  filosofo:           { id: "filosofo",           nome: "Filosofo",               emoji: "🌍", ruolo: "Patrimonio filosofico applicato al calcio" },
+  pedagogista:        { id: "pedagogista",         nome: "Pedagogista",            emoji: "📚", ruolo: "Formare formatori, didattica per adulti" },
+  tuttologo:          { id: "tuttologo",           nome: "Tuttologo Consapevole",  emoji: "🧭", ruolo: "Costruttore di ponti tra discipline" },
+  neuroscienziato:    { id: "neuroscienziato",     nome: "Neuroscienziato",        emoji: "🧠", ruolo: "Neuroscienze applicate alla PT" },
+  tattico:            { id: "tattico",             nome: "Esperto Tattico",        emoji: "♟️", ruolo: "Analisi tattica in chiave PT" },
+  tecnico:            { id: "tecnico",             nome: "Esperto Tecnico",        emoji: "🎯", ruolo: "Tecnica dentro il modello di gioco" },
+  fisiologo:          { id: "fisiologo",           nome: "Fisiologo",              emoji: "🏃", ruolo: "Fisiologia specifica nel morfociclo PT" },
+  psicologo:          { id: "psicologo",           nome: "Psicologo dello sport",  emoji: "🧘", ruolo: "Gruppo come sistema vivente" },
+  matematico:         { id: "matematico",          nome: "Matematico complessita", emoji: "📐", ruolo: "Sistemi complessi e PT" },
+  economista:         { id: "economista",          nome: "Economista calcio africano", emoji: "💼", ruolo: "Academy PT e mercati formativi in Africa" },
+  traduttore:         { id: "traduttore",          nome: "Traduttore-Localizzatore",   emoji: "🌐", ruolo: "Resa multilingua della PT" },
+  web_editor:         { id: "web_editor",          nome: "Web Editor",             emoji: "✍️", ruolo: "Comunicazione digitale Madarom" },
+  direttore:          { id: "direttore",           nome: "Visione d insieme",      emoji: "🔮", ruolo: "Sintesi trasversale - solo su richiesta" }
+};
 
 let conversazione   = [];
 let domandaCorrente = null;
@@ -28,8 +29,7 @@ const conversazioneDiv = document.getElementById("conversazione");
 const chatForm         = document.getElementById("chat-form");
 const domandaInput     = document.getElementById("domanda-input");
 const inviaBtn         = document.getElementById("invia-btn");
-const listaPensatori   = document.getElementById("lista-pensatori");
-const listaSpecialisti = document.getElementById("lista-specialisti");
+const agenteSelect     = document.getElementById("agente-select");
 const btnSintesi       = document.getElementById("btn-sintesi");
 const resetBtn         = document.getElementById("reset-btn");
 
@@ -64,43 +64,16 @@ loginForm.addEventListener("submit", async (e) => {
 function mostraApp() {
   loginScreen.classList.add("nascosto");
   appScreen.classList.remove("nascosto");
-  costruisciSidebar();
-}
-
-function toggleGruppo(id) {
-  document.getElementById(id).classList.toggle("chiuso");
-}
-window.toggleGruppo = toggleGruppo;
-
-function costruisciSidebar() {
-  listaPensatori.innerHTML = "";
-  listaSpecialisti.innerHTML = "";
-  SPECIALISTI.forEach(sp => {
-    const btn = document.createElement("button");
-    btn.className = "agente-btn";
-    btn.dataset.id = sp.id;
-    btn.innerHTML = `
-      <span class="btn-emoji">${sp.emoji}</span>
-      <span class="btn-nome">${sp.nome}</span>
-      <span class="btn-badge badge-llama">rapido</span>
-    `;
-    btn.addEventListener("click", () => {
-      const testo = domandaCorrente || domandaInput.value.trim();
-      if (!testo) { pulsaDomanda(); return; }
-      if (occupato) return;
-      eseguiAgente(sp, testo);
-    });
-    if (sp.gruppo === "pensatori") listaPensatori.appendChild(btn);
-    else listaSpecialisti.appendChild(btn);
-  });
 }
 
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const testo = domandaInput.value.trim();
   if (!testo || occupato) return;
-  const primo = SPECIALISTI[0];
-  eseguiAgente(primo, testo);
+  const id = agenteSelect.value;
+  const sp = SPECIALISTI[id];
+  if (!sp) return;
+  eseguiAgente(sp, testo);
 });
 
 async function eseguiAgente(sp, testo) {
@@ -116,8 +89,8 @@ async function eseguiAgente(sp, testo) {
     aggiungiBollaUtente(testo);
   }
 
-  segnaAttivo(sp.id);
-  setDisabilitati(true);
+  inviaBtn.disabled = true;
+  btnSintesi.disabled = true;
   aggiungiSistema(sp.emoji + " " + sp.nome + " sta pensando…");
   const ind = mostraIndicatore(sp.nome);
   scorri();
@@ -156,15 +129,16 @@ async function eseguiAgente(sp, testo) {
     mostraErrore("Errore di connessione: " + err.message);
   } finally {
     occupato = false;
-    setDisabilitati(false);
-    segnaAttivo(null);
+    inviaBtn.disabled = false;
+    btnSintesi.disabled = false;
   }
 }
 
 btnSintesi.addEventListener("click", async () => {
   if (conversazione.length === 0 || occupato) return;
   occupato = true;
-  setDisabilitati(true);
+  inviaBtn.disabled = true;
+  btnSintesi.disabled = true;
   aggiungiSistema("🔮 Visione d insieme in elaborazione…");
   const ind = mostraIndicatore("Elaborazione");
   scorri();
@@ -186,7 +160,8 @@ btnSintesi.addEventListener("click", async () => {
     mostraErrore("Errore: " + err.message);
   } finally {
     occupato = false;
-    setDisabilitati(false);
+    inviaBtn.disabled = false;
+    btnSintesi.disabled = false;
   }
 });
 
@@ -197,7 +172,7 @@ resetBtn.addEventListener("click", () => {
   conversazioneDiv.innerHTML = `
     <div class="msg-benvenuto">
       <h2>Dipartimento Madarom</h2>
-      <p>Scrivi la tua domanda e scegli con chi vuoi confrontarti.<br>Sei tu il coordinatore.</p>
+      <p>Scegli un agente dal menu in alto, scrivi la domanda e premi →</p>
     </div>`;
   aggiornaSintesi();
 });
@@ -217,7 +192,7 @@ function aggiungiBollaUtente(testo) {
 
 function aggiungiBolla(data, sintesi = false) {
   const div = document.createElement("div");
-  div.className = "bolla-agente bolla-llama";
+  div.className = "bolla-agente";
   if (sintesi) div.classList.add("bolla-sintesi");
 
   const header = document.createElement("div");
@@ -225,7 +200,7 @@ function aggiungiBolla(data, sintesi = false) {
   header.innerHTML = `
     <div class="agente-emoji">${data.emoji || "🟡"}</div>
     <div>
-      <div class="agente-nome">${esc(data.agente || "")} <span class="badge-modello badge-llama">rapido</span></div>
+      <div class="agente-nome">${esc(data.agente || "")}</div>
       <div class="agente-ruolo">${esc(data.ruolo || "")}</div>
     </div>`;
 
@@ -237,10 +212,8 @@ function aggiungiBolla(data, sintesi = false) {
   div.appendChild(contenuto);
   conversazioneDiv.appendChild(div);
 
-  // SCROLL GARANTITO
   setTimeout(() => {
     conversazioneDiv.scrollTop = conversazioneDiv.scrollHeight;
-    div.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, 100);
 }
 
@@ -287,26 +260,8 @@ function mostraErrore(msg) {
   scorri();
 }
 
-function pulsaDomanda() {
-  domandaInput.style.borderColor = "#c0392b";
-  domandaInput.focus();
-  setTimeout(() => { domandaInput.style.borderColor = ""; }, 900);
-}
-
-function setDisabilitati(dis) {
-  inviaBtn.disabled = dis;
-  btnSintesi.disabled = dis;
-  document.querySelectorAll(".agente-btn").forEach(b => b.disabled = dis);
-}
-
 function aggiornaSintesi() {
   btnSintesi.classList.toggle("nascosto", conversazione.length === 0);
-}
-
-function segnaAttivo(id) {
-  document.querySelectorAll(".agente-btn").forEach(b => {
-    b.classList.toggle("attivo", id !== null && b.dataset.id === id);
-  });
 }
 
 function scorri() {
@@ -317,7 +272,7 @@ function scorri() {
 
 domandaInput.addEventListener("input", () => {
   domandaInput.style.height = "auto";
-  domandaInput.style.height = Math.min(domandaInput.scrollHeight, 160) + "px";
+  domandaInput.style.height = Math.min(domandaInput.scrollHeight, 140) + "px";
   if (domandaInput.value.trim() !== domandaCorrente) domandaCorrente = null;
 });
 
