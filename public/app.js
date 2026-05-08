@@ -66,6 +66,15 @@ function mostraApp() {
   appScreen.classList.remove("nascosto");
 }
 
+// Quando cambi agente e c'è già una domanda attiva — parte automaticamente
+agenteSelect.addEventListener("change", () => {
+  if (domandaCorrente && !occupato) {
+    const id = agenteSelect.value;
+    const sp = SPECIALISTI[id];
+    if (sp) eseguiAgente(sp, domandaCorrente);
+  }
+});
+
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const testo = domandaInput.value.trim();
@@ -97,33 +106,27 @@ async function eseguiAgente(sp, testo) {
 
   try {
     const body = { tipo: "specialista", domanda: domandaCorrente, agente: sp.id, contesto: conversazione };
-
     const res = await fetch("/.netlify/functions/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
     });
-
     ind.remove();
-
     if (res.status === 401) {
       loginScreen.classList.remove("nascosto");
       appScreen.classList.add("nascosto");
       loginError.textContent = "Sessione scaduta";
       return;
     }
-
     const data = await res.json();
     if (!data.ok) {
       mostraErrore((data.errore || "Errore") + (data.dettaglio ? " — " + data.dettaglio : ""));
       return;
     }
-
     aggiungiBolla(data);
     conversazione.push({ agente: data.agente, contenuto: data.contenuto });
     aggiornaSintesi();
     scorri();
-
   } catch (err) {
     ind.remove();
     mostraErrore("Errore di connessione: " + err.message);
@@ -194,7 +197,6 @@ function aggiungiBolla(data, sintesi = false) {
   const div = document.createElement("div");
   div.className = "bolla-agente";
   if (sintesi) div.classList.add("bolla-sintesi");
-
   const header = document.createElement("div");
   header.className = "agente-header";
   header.innerHTML = `
@@ -203,11 +205,9 @@ function aggiungiBolla(data, sintesi = false) {
       <div class="agente-nome">${esc(data.agente || "")}</div>
       <div class="agente-ruolo">${esc(data.ruolo || "")}</div>
     </div>`;
-
   const contenuto = document.createElement("div");
   contenuto.className = "agente-contenuto";
   contenuto.innerHTML = formatta(data.contenuto || "");
-
   div.appendChild(header);
   div.appendChild(contenuto);
   conversazioneDiv.appendChild(div);
@@ -263,14 +263,13 @@ function aggiornaSintesi() {
 
 function scorri() {
   setTimeout(() => {
-    conversazioneDiv.scrollTop = conversazioneDiv.scrollHeight;
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   }, 200);
 }
 
 domandaInput.addEventListener("input", () => {
   domandaInput.style.height = "auto";
   domandaInput.style.height = Math.min(domandaInput.scrollHeight, 140) + "px";
-  if (domandaInput.value.trim() !== domandaCorrente) domandaCorrente = null;
 });
 
 domandaInput.addEventListener("keydown", (e) => {
