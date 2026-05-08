@@ -1,274 +1,201 @@
-const SPECIALISTI = {
-  maestro_allenatore: { id: "maestro_allenatore", nome: "Maestro Allenatore PT", emoji: "⚽", ruolo: "PT come paradigma con molti interpreti" },
-  filosofo:           { id: "filosofo",           nome: "Filosofo",               emoji: "🌍", ruolo: "Patrimonio filosofico applicato al calcio" },
-  pedagogista:        { id: "pedagogista",         nome: "Pedagogista",            emoji: "📚", ruolo: "Formare formatori, didattica per adulti" },
-  tuttologo:          { id: "tuttologo",           nome: "Tuttologo Consapevole",  emoji: "🧭", ruolo: "Costruttore di ponti tra discipline" },
-  neuroscienziato:    { id: "neuroscienziato",     nome: "Neuroscienziato",        emoji: "🧠", ruolo: "Neuroscienze applicate alla PT" },
-  tattico:            { id: "tattico",             nome: "Esperto Tattico",        emoji: "♟️", ruolo: "Analisi tattica in chiave PT" },
-  tecnico:            { id: "tecnico",             nome: "Esperto Tecnico",        emoji: "🎯", ruolo: "Tecnica dentro il modello di gioco" },
-  fisiologo:          { id: "fisiologo",           nome: "Fisiologo",              emoji: "🏃", ruolo: "Fisiologia specifica nel morfociclo PT" },
-  psicologo:          { id: "psicologo",           nome: "Psicologo dello sport",  emoji: "🧘", ruolo: "Gruppo come sistema vivente" },
-  matematico:         { id: "matematico",          nome: "Matematico complessita", emoji: "📐", ruolo: "Sistemi complessi e PT" },
-  economista:         { id: "economista",          nome: "Economista calcio africano", emoji: "💼", ruolo: "Academy PT e mercati formativi in Africa" },
-  traduttore:         { id: "traduttore",          nome: "Traduttore-Localizzatore",   emoji: "🌐", ruolo: "Resa multilingua della PT" },
-  web_editor:         { id: "web_editor",          nome: "Web Editor",             emoji: "✍️", ruolo: "Comunicazione digitale Madarom" },
-  direttore:          { id: "direttore",           nome: "Visione d insieme",      emoji: "🔮", ruolo: "Sintesi trasversale - solo su richiesta" }
-};
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dipartimento Madarom</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --nero: #0a0a0a;
+  --nero-card: #111;
+  --nero-border: #1e1e1e;
+  --grigio-scuro: #2a2a2a;
+  --grigio-mid: #555;
+  --grigio-testo: #888;
+  --bianco: #f0ede8;
+  --bianco-dim: #c8c4bc;
+  --oro: #c9a84c;
+  --verde: #3a7a3a;
+  --rosso: #c0392b;
+  --r: 5px;
+  --fw: 'Playfair Display', Georgia, serif;
+  --fb: 'IBM Plex Sans', sans-serif;
+  --fm: 'IBM Plex Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--nero); color: var(--bianco); font-family: var(--fb); font-size: 15px; line-height: 1.6; }
+.nascosto { display: none !important; }
 
-let conversazione   = [];
-let domandaCorrente = null;
-let occupato        = false;
+#login-screen {
+  display: flex; align-items: center; justify-content: center; min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 25%, #1a1200 0%, transparent 65%), var(--nero);
+}
+.login-box { width: 320px; padding: 48px 32px 40px; border: 1px solid #2a2400; background: var(--nero-card); text-align: center; }
+.login-logo { font-size: 2.2rem; margin-bottom: 14px; }
+.login-title { font-family: var(--fw); font-size: 1.75rem; color: var(--oro); line-height: 1.15; margin-bottom: 6px; }
+.login-sub { font-family: var(--fm); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--grigio-testo); margin-bottom: 32px; }
+#login-form input { width: 100%; background: var(--grigio-scuro); border: 1px solid var(--nero-border); color: var(--bianco); padding: 12px 16px; font-family: var(--fm); font-size: .9rem; margin-bottom: 12px; outline: none; transition: border-color .2s; }
+#login-form input:focus { border-color: var(--oro); }
+#login-btn { width: 100%; background: var(--oro); color: var(--nero); border: none; padding: 12px; font-family: var(--fm); font-size: .82rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+#login-btn:disabled { opacity: .45; cursor: not-allowed; }
+#login-error { color: var(--rosso); font-family: var(--fm); font-size: .75rem; margin-top: 10px; min-height: 1.2em; }
 
-const loginScreen      = document.getElementById("login-screen");
-const appScreen        = document.getElementById("app-screen");
-const loginForm        = document.getElementById("login-form");
-const passwordInput    = document.getElementById("password-input");
-const loginBtn         = document.getElementById("login-btn");
-const loginError       = document.getElementById("login-error");
-const conversazioneDiv = document.getElementById("conversazione");
-const chatForm         = document.getElementById("chat-form");
-const domandaInput     = document.getElementById("domanda-input");
-const inviaBtn         = document.getElementById("invia-btn");
-const agenteSelect     = document.getElementById("agente-select");
-const btnSintesi       = document.getElementById("btn-sintesi");
-const resetBtn         = document.getElementById("reset-btn");
-
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const password = passwordInput.value.trim();
-  if (!password) return;
-  loginBtn.disabled = true;
-  loginBtn.textContent = "Verifica…";
-  loginError.textContent = "";
-  try {
-    const res = await fetch("/.netlify/functions/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      mostraApp();
-      passwordInput.value = "";
-    } else {
-      loginError.textContent = data.errore || "Password errata";
-    }
-  } catch {
-    loginError.textContent = "Errore di connessione";
-  } finally {
-    loginBtn.disabled = false;
-    loginBtn.textContent = "Entra";
-  }
-});
-
-function mostraApp() {
-  loginScreen.classList.add("nascosto");
-  appScreen.classList.remove("nascosto");
+#topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--nero-card);
+  border-bottom: 1px solid var(--nero-border);
+}
+.topbar-logo { font-size: 1.1rem; flex-shrink: 0; }
+.topbar-title { font-family: var(--fw); font-size: .9rem; color: var(--oro); font-weight: 700; flex-shrink: 0; }
+#agente-select {
+  flex: 1; min-width: 0;
+  background: var(--grigio-scuro);
+  border: 1px solid var(--nero-border);
+  color: var(--bianco);
+  padding: 7px 10px;
+  font-family: var(--fb);
+  font-size: .82rem;
+  border-radius: var(--r);
+  outline: none;
+}
+#agente-select:focus { border-color: var(--oro); }
+#btn-sintesi {
+  background: transparent; border: 1px solid #4a3800; color: var(--oro);
+  padding: 6px 10px; border-radius: var(--r); font-family: var(--fm); font-size: .68rem;
+  cursor: pointer; flex-shrink: 0; white-space: nowrap;
+}
+#btn-sintesi:disabled { opacity: .35; cursor: not-allowed; }
+#reset-btn {
+  background: none; border: 1px solid var(--grigio-scuro); color: var(--grigio-testo);
+  width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: .9rem; flex-shrink: 0;
 }
 
-chatForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const testo = domandaInput.value.trim();
-  if (!testo || occupato) return;
-  const id = agenteSelect.value;
-  const sp = SPECIALISTI[id];
-  if (!sp) return;
-  eseguiAgente(sp, testo);
-});
-
-async function eseguiAgente(sp, testo) {
-  if (occupato) return;
-  occupato = true;
-
-  const primaRisposta = !domandaCorrente;
-  if (primaRisposta) {
-    domandaCorrente = testo;
-    domandaInput.value = "";
-    domandaInput.style.height = "auto";
-    rimuoviBenvenuto();
-    aggiungiBollaUtente(testo);
-  }
-
-  inviaBtn.disabled = true;
-  btnSintesi.disabled = true;
-  aggiungiSistema(sp.emoji + " " + sp.nome + " sta pensando…");
-  const ind = mostraIndicatore(sp.nome);
-  scorri();
-
-  try {
-    const body = { tipo: "specialista", domanda: domandaCorrente, agente: sp.id, contesto: conversazione };
-    const res = await fetch("/.netlify/functions/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-    ind.remove();
-    if (res.status === 401) {
-      loginScreen.classList.remove("nascosto");
-      appScreen.classList.add("nascosto");
-      loginError.textContent = "Sessione scaduta";
-      return;
-    }
-    const data = await res.json();
-    if (!data.ok) {
-      mostraErrore((data.errore || "Errore") + (data.dettaglio ? " — " + data.dettaglio : ""));
-      return;
-    }
-    aggiungiBolla(data);
-    conversazione.push({ agente: data.agente, contenuto: data.contenuto });
-    aggiornaSintesi();
-    scorri();
-  } catch (err) {
-    ind.remove();
-    mostraErrore("Errore di connessione: " + err.message);
-  } finally {
-    occupato = false;
-    inviaBtn.disabled = false;
-    btnSintesi.disabled = false;
-  }
+#conversazione {
+  min-height: 60vh;
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-btnSintesi.addEventListener("click", async () => {
-  if (conversazione.length === 0 || occupato) return;
-  occupato = true;
-  inviaBtn.disabled = true;
-  btnSintesi.disabled = true;
-  aggiungiSistema("🔮 Visione d insieme in elaborazione…");
-  const ind = mostraIndicatore("Elaborazione");
-  scorri();
-  try {
-    const res = await fetch("/.netlify/functions/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tipo: "sintesi", domanda: domandaCorrente, contesto: conversazione })
-    });
-    ind.remove();
-    if (res.status === 401) { loginScreen.classList.remove("nascosto"); appScreen.classList.add("nascosto"); return; }
-    const data = await res.json();
-    if (!data.ok) { mostraErrore(data.errore || "Errore"); return; }
-    aggiungiBolla(data, true);
-    conversazione.push({ agente: data.agente, contenuto: data.contenuto });
-    scorri();
-  } catch (err) {
-    ind.remove();
-    mostraErrore("Errore: " + err.message);
-  } finally {
-    occupato = false;
-    inviaBtn.disabled = false;
-    btnSintesi.disabled = false;
-  }
-});
+#input-area {
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  padding: 12px 14px;
+  background: var(--nero-card);
+  border-top: 1px solid var(--nero-border);
+}
+#chat-form { display: flex; gap: 8px; align-items: flex-end; }
+#domanda-input {
+  flex: 1; background: var(--grigio-scuro); border: 1px solid var(--nero-border);
+  color: var(--bianco); padding: 10px 14px; font-family: var(--fb); font-size: .88rem;
+  resize: none; outline: none; border-radius: var(--r); min-height: 42px; max-height: 120px;
+  transition: border-color .2s; -webkit-appearance: none;
+}
+#domanda-input:focus { border-color: var(--oro); }
+#domanda-input::placeholder { color: var(--grigio-mid); }
+#invia-btn {
+  background: var(--oro); color: var(--nero); border: none;
+  width: 42px; height: 42px; border-radius: var(--r); font-size: 1.1rem; font-weight: bold;
+  cursor: pointer; flex-shrink: 0;
+}
+#invia-btn:disabled { opacity: .38; cursor: not-allowed; }
 
-resetBtn.addEventListener("click", () => {
-  if (!confirm("Nuova conversazione?")) return;
-  conversazione = [];
-  domandaCorrente = null;
-  conversazioneDiv.innerHTML = `
+.msg-benvenuto { max-width: 480px; margin: 32px auto 0; text-align: center; padding: 32px 24px; border: 1px solid var(--nero-border); background: var(--nero-card); }
+.msg-benvenuto h2 { font-family: var(--fw); font-size: 1.4rem; color: var(--oro); margin-bottom: 8px; }
+.msg-benvenuto p { color: var(--grigio-testo); font-size: .85rem; line-height: 1.6; }
+
+.bolla-utente { align-self: flex-end; max-width: 80%; background: var(--grigio-scuro); border: 1px solid #333; padding: 10px 16px; border-radius: var(--r); font-size: .88rem; color: var(--bianco); word-wrap: break-word; }
+
+.bolla-agente { align-self: flex-start; width: 100%; background: var(--nero-card); border: 1px solid var(--nero-border); border-left: 3px solid var(--verde); border-radius: var(--r); overflow: hidden; word-wrap: break-word; }
+.bolla-agente.bolla-sintesi { border-left-color: var(--oro); }
+
+.agente-header { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--nero-border); background: rgba(255,255,255,.02); }
+.agente-emoji { font-size: 1rem; flex-shrink: 0; }
+.agente-nome { font-size: .8rem; font-weight: 500; color: var(--bianco); }
+.agente-ruolo { font-family: var(--fm); font-size: .62rem; color: var(--grigio-testo); margin-top: 1px; }
+
+.agente-contenuto { padding: 14px 16px; font-size: .87rem; line-height: 1.75; color: var(--bianco-dim); }
+.agente-contenuto p { margin-bottom: 12px; }
+.agente-contenuto p:last-child { margin-bottom: 0; }
+
+.msg-sistema { align-self: center; font-family: var(--fm); font-size: .65rem; color: var(--grigio-testo); }
+.indicatore-scrittura { align-self: flex-start; display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--nero-card); border: 1px solid var(--nero-border); border-radius: var(--r); font-family: var(--fm); font-size: .7rem; color: var(--grigio-testo); }
+.puntini { display: flex; gap: 4px; }
+.puntini span { width: 5px; height: 5px; background: var(--oro); border-radius: 50%; animation: pulsa 1.2s ease-in-out infinite; }
+.puntini span:nth-child(2) { animation-delay: .2s; }
+.puntini span:nth-child(3) { animation-delay: .4s; }
+@keyframes pulsa { 0%,80%,100% { opacity:.2; transform:scale(.8); } 40% { opacity:1; transform:scale(1); } }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🟡</div>
+    <h1 class="login-title">Dipartimento<br>Madarom</h1>
+    <p class="login-sub">Accesso riservato</p>
+    <form id="login-form" autocomplete="off">
+      <input type="password" id="password-input" placeholder="Password" autocomplete="current-password"/>
+      <button type="submit" id="login-btn">Entra</button>
+      <p id="login-error"></p>
+    </form>
+  </div>
+</div>
+
+<div id="app-screen" class="nascosto">
+  <div id="topbar">
+    <span class="topbar-logo">🟡</span>
+    <span class="topbar-title">Madarom</span>
+    <select id="agente-select">
+      <optgroup label="💎 Pensatori">
+        <option value="maestro_allenatore">⚽ Maestro Allenatore PT</option>
+        <option value="filosofo">🌍 Filosofo</option>
+        <option value="pedagogista">📚 Pedagogista</option>
+        <option value="tuttologo">🧭 Tuttologo</option>
+        <option value="neuroscienziato">🧠 Neuroscienziato</option>
+      </optgroup>
+      <optgroup label="⚡ Specialisti">
+        <option value="tattico">♟️ Tattico</option>
+        <option value="tecnico">🎯 Tecnico</option>
+        <option value="fisiologo">🏃 Fisiologo</option>
+        <option value="psicologo">🧘 Psicologo</option>
+        <option value="matematico">📐 Matematico</option>
+        <option value="economista">💼 Economista</option>
+        <option value="traduttore">🌐 Traduttore</option>
+        <option value="web_editor">✍️ Web Editor</option>
+      </optgroup>
+      <optgroup label="──────────">
+        <option value="direttore">🔮 Visione insieme</option>
+      </optgroup>
+    </select>
+    <button id="btn-sintesi" class="nascosto">🔮 Sintesi</button>
+    <button id="reset-btn" title="Nuova conversazione">↺</button>
+  </div>
+
+  <div id="conversazione">
     <div class="msg-benvenuto">
       <h2>Dipartimento Madarom</h2>
       <p>Scegli un agente dal menu, scrivi la domanda e premi →</p>
-    </div>`;
-  aggiornaSintesi();
-});
+    </div>
+  </div>
 
-function rimuoviBenvenuto() {
-  const el = conversazioneDiv.querySelector(".msg-benvenuto");
-  if (el) el.remove();
-}
+  <div id="input-area">
+    <form id="chat-form">
+      <textarea id="domanda-input" placeholder="Scrivi la tua domanda…" rows="1"></textarea>
+      <button type="submit" id="invia-btn">→</button>
+    </form>
+  </div>
+</div>
 
-function aggiungiBollaUtente(testo) {
-  const div = document.createElement("div");
-  div.className = "bolla-utente";
-  div.textContent = testo;
-  conversazioneDiv.appendChild(div);
-  scorri();
-}
-
-function aggiungiBolla(data, sintesi = false) {
-  const div = document.createElement("div");
-  div.className = "bolla-agente";
-  if (sintesi) div.classList.add("bolla-sintesi");
-  const header = document.createElement("div");
-  header.className = "agente-header";
-  header.innerHTML = `
-    <div class="agente-emoji">${data.emoji || "🟡"}</div>
-    <div>
-      <div class="agente-nome">${esc(data.agente || "")}</div>
-      <div class="agente-ruolo">${esc(data.ruolo || "")}</div>
-    </div>`;
-  const contenuto = document.createElement("div");
-  contenuto.className = "agente-contenuto";
-  contenuto.innerHTML = formatta(data.contenuto || "");
-  div.appendChild(header);
-  div.appendChild(contenuto);
-  conversazioneDiv.appendChild(div);
-  scorri();
-}
-
-function formatta(testo) {
-  return testo
-    .split(/\n{2,}/)
-    .map(p => p.trim())
-    .filter(p => p.length > 0)
-    .map(p => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`)
-    .join("");
-}
-
-function esc(str) {
-  const d = document.createElement("div");
-  d.textContent = str;
-  return d.innerHTML;
-}
-
-function mostraIndicatore(nome) {
-  const div = document.createElement("div");
-  div.className = "indicatore-scrittura";
-  div.innerHTML = `<span>${esc(nome)}</span><div class="puntini"><span></span><span></span><span></span></div>`;
-  conversazioneDiv.appendChild(div);
-  scorri();
-  return div;
-}
-
-function aggiungiSistema(testo) {
-  const div = document.createElement("div");
-  div.className = "msg-sistema";
-  div.textContent = testo;
-  conversazioneDiv.appendChild(div);
-  scorri();
-}
-
-function mostraErrore(msg) {
-  const div = document.createElement("div");
-  div.className = "bolla-agente";
-  div.style.borderLeftColor = "#c0392b";
-  div.innerHTML = `
-    <div class="agente-header"><div class="agente-emoji">⚠️</div><div><div class="agente-nome">Errore</div></div></div>
-    <div class="agente-contenuto"><p>${esc(msg)}</p></div>`;
-  conversazioneDiv.appendChild(div);
-  scorri();
-}
-
-function aggiornaSintesi() {
-  btnSintesi.classList.toggle("nascosto", conversazione.length === 0);
-}
-
-function scorri() {
-  const el = document.getElementById("conversazione");
-  setTimeout(() => {
-    el.scrollTop = el.scrollHeight + 9999;
-    el.scrollTo({ top: el.scrollHeight + 9999, behavior: "smooth" });
-  }, 300);
-}
-
-domandaInput.addEventListener("input", () => {
-  domandaInput.style.height = "auto";
-  domandaInput.style.height = Math.min(domandaInput.scrollHeight, 140) + "px";
-  if (domandaInput.value.trim() !== domandaCorrente) domandaCorrente = null;
-});
-
-domandaInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-    e.preventDefault();
-    chatForm.dispatchEvent(new Event("submit"));
-  }
-});
+<script src="app.js"></script>
+</body>
+</html>
