@@ -88,7 +88,7 @@ async function chiamaClaude(agente, domanda, contesto, apiKey) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: "claude-sonnet-4-5", max_tokens: 2048, system: agente.prompt, messages: [{ role: "user", content: msg }] })
+    body: JSON.stringify({ model: "claude-sonnet-4-5", max_tokens: 800, system: agente.prompt, messages: [{ role: "user", content: msg }] })
   });
   if (!res.ok) throw new Error("Claude API error " + res.status);
   const data = await res.json();
