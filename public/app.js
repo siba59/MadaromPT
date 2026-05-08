@@ -85,8 +85,12 @@ async function eseguiAgente(sp, testo) {
     domandaCorrente = testo;
     rimuoviBenvenuto();
     aggiungiBollaUtente(testo);
-    // NON svuotare il campo — resta la domanda per usarla con altri agenti
   }
+
+  // Rimette sempre la domanda nel campo dopo l'invio
+  domandaInput.value = domandaCorrente;
+  domandaInput.style.height = "auto";
+  domandaInput.style.height = Math.min(domandaInput.scrollHeight, 140) + "px";
 
   inviaBtn.disabled = true;
   btnSintesi.disabled = true;
